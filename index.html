@@ -484,9 +484,13 @@ img.fd.ok{opacity:1}
 .cm .pie .ant:active{transform:translateX(-6px)}
 .cm .tim{transition:transform .4s var(--sp)}.cm .tim:active{transform:scale(.95)}
 .tmr{animation:sube .45s var(--sp) both}
-.tmr:not(.pau):not(.fin) .tt{animation:late 2s ease-in-out infinite}
 @keyframes late{50%{opacity:.7}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0ms!important;transition-duration:.01ms!important}img.fd{opacity:1}}
+
+.cm .paso .tit{font-weight:400}
+
+.dockf{top:calc(70px + env(safe-area-inset-top))}
+.dockf .tmr{box-shadow:0 10px 24px -12px rgba(0,0,0,.45)}
 </style>
 </head>
 <body>
@@ -824,7 +828,7 @@ function pintarDocks(){
   let f = document.querySelector(".dockf");
   if (fuera && !f){ f = el("div",{class:"dockf"}, dock()); document.body.append(f); }
   if (!fuera && f){ f.remove(); f = null; }
-  $(".wrap").style.paddingTop = f ? "calc(" + (f.offsetHeight + 22) + "px + env(safe-area-inset-top))" : "";   // que no tape el encabezado
+  // flota encima del contenido (sobre la foto), sin empujar nada hacia abajo
 }
 // fondos pastel de cada paso: [fondo, texto, acento]
 const PALETA = [["#e7e2d6","#2b2a25","#5f6b4e"],["#cdd5c2","#262a22","#4e5b3f"],["#dcd8cf","#2a2926","#7a5f45"],["#e6d2c2","#2e2621","#8a5a3c"],["#5f6b4e","#f1efe7","#e6dcc0"]];
@@ -844,8 +848,11 @@ function vCocinar(x){
       x.ingredientes.length ? el("button",{onclick:() => verIng(x)}, "ingredientes") : el("span")));
     cm.append(el("div",{class:"num",text:"Paso " + (paso + 1) + " de " + x.pasos.length}), el("div",{class:"ttl",text:x.titulo}));
     const pz = el("div",{class:"paso"}), pin = el("div"); pz.append(pin);
-    const m = t.match(RE_T);
-    if (m){ const i = m.index; pin.append(t.slice(0, i), el("b",{text:m[0]}), t.slice(i + m[0].length)); } else pin.textContent = t;
+    // si el paso empieza con un título seguido de dos puntos ("Prepara la sartén:"), ese título va en regular 400
+    let cuerpo = t; const dp = t.indexOf(":");
+    if (dp > 0 && dp <= 70 && !/\d$/.test(t.slice(0, dp))){ pin.append(el("span",{class:"tit",text:t.slice(0, dp + 1)}), " "); cuerpo = t.slice(dp + 1).trimStart(); }
+    const m = cuerpo.match(RE_T);
+    if (m){ const i = m.index; pin.append(cuerpo.slice(0, i), el("b",{text:m[0]}), cuerpo.slice(i + m[0].length)); } else pin.append(cuerpo);
     cm.append(pz);
     if (seg){ const ya = timers.some(z => z.rec === x.id && z.paso === paso);
       cm.append(el("button",{class:"tim" + (ya ? " ya" : ""),onclick:() => { if (!ya){ crearTimer(x, paso, seg); pintar(); } }}, IC.clock(), ya ? "temporizador en marcha" : "iniciar temporizador · " + mmss(seg))); }

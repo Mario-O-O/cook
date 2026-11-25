@@ -416,6 +416,77 @@ html[data-scr="inicio"] .wrap{padding-top:0}
 .tls.hz .tl .tn{font-size:16px;-webkit-line-clamp:2}
 
 .foto .ib.fl{display:grid;place-items:center;padding:0}
+
+/* ===== animaciones y microinteracciones ===== */
+:root{--sp:cubic-bezier(.34,1.56,.64,1);--ez:cubic-bezier(.22,1,.36,1)}
+@keyframes sube{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes aparece{from{opacity:0}to{opacity:1}}
+@keyframes crece{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+button:active{opacity:1}
+/* entrada de cada pantalla, en cascada */
+#view>*{animation:sube .6s var(--ez) both}
+#view>*:nth-child(2){animation-delay:.05s}#view>*:nth-child(3){animation-delay:.1s}#view>*:nth-child(4){animation-delay:.15s}
+#view>*:nth-child(5){animation-delay:.2s}#view>*:nth-child(6){animation-delay:.25s}#view>*:nth-child(n+7){animation-delay:.3s}
+.pan>*{animation:sube .7s var(--ez) both}
+.pan>*:nth-child(2){animation-delay:.06s}.pan>*:nth-child(3){animation-delay:.12s}.pan>*:nth-child(4){animation-delay:.18s}.pan>*:nth-child(5){animation-delay:.24s}.pan>*:nth-child(6){animation-delay:.3s}
+.foto{animation:crece .7s var(--ez) both}
+.foto img{will-change:transform}
+/* tarjetas: entran una a una y responden al toque */
+.tl{animation:sube .55s var(--ez) both;animation-delay:calc(var(--i,0) * 55ms + .05s);transition:transform .45s var(--sp),box-shadow .3s}
+.tl:active{transform:scale(.965)}
+.tl .ar,.sug2 .ar{transition:transform .45s var(--sp),background .3s}
+.tl:active .ar,.sug2:active .ar{transform:rotate(45deg) scale(1.08);background:rgba(35,36,31,.16)}
+.tlf img,.sgf img{transition:transform 1.2s var(--ez)}
+.tl:active .tlf img,.sug2:active .sgf img{transform:scale(1.05)}
+.sug2{transition:transform .45s var(--sp)}.sug2:active{transform:scale(.98)}
+/* fotos que aparecen al cargar */
+img.fd{opacity:0;transition:opacity .6s ease,transform 1.2s var(--ez)}
+img.fd.ok{opacity:1}
+/* botones con resorte */
+.ib,.vb,.barra button,.cook,.save,.btn,.btn2,.filtros button,.chips button,.otra,.acts button,.activo{transition:transform .4s var(--sp),background .3s,color .3s,box-shadow .3s}
+.ib:active,.vb:active,.barra button:active,.filtros button:active,.chips button:active,.otra:active,.acts button:active{transform:scale(.9)}
+.cook:active,.save:active,.btn:active,.btn2:active{transform:translateX(-50%) scale(.97)}
+.btn:active,.btn2:active{transform:scale(.96)}
+.cook .go{transition:transform .45s var(--sp)}.cook:active .go{transform:rotate(45deg)}
+.barra{animation:barraIn .7s .25s var(--sp) both}
+@keyframes barraIn{from{opacity:0;transform:translate(-50%,30px)}to{opacity:1;transform:translate(-50%,0)}}
+.barra button.on svg{transition:transform .5s var(--sp)}.barra button.on:active svg{transform:rotate(90deg)}
+.otra svg{transition:transform .6s var(--sp)}.otra:active svg{transform:rotate(-180deg)}
+.cook{animation:cookIn .6s .2s var(--sp) both}
+@keyframes cookIn{from{opacity:0;transform:translate(-50%,24px)}to{opacity:1;transform:translate(-50%,0)}}
+/* corazón */
+.hv.pop svg{animation:pop .5s var(--sp)}
+@keyframes pop{30%{transform:scale(1.35)}}
+.chispa{position:fixed;width:6px;height:6px;border-radius:50%;background:#8a5a3c;pointer-events:none;z-index:40;animation:chispa .65s var(--ez) forwards}
+.chispa:nth-child(odd){background:#5f6b4e}
+@keyframes chispa{to{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
+/* ingredientes y pasos en cascada (heredan el retraso de su lista) */
+.ing li,.steps li{animation:sube .5s var(--ez) both}
+.ing li:nth-child(2),.steps li:nth-child(2){animation-delay:.04s}.ing li:nth-child(3),.steps li:nth-child(3){animation-delay:.08s}
+.ing li:nth-child(4),.steps li:nth-child(4){animation-delay:.12s}.ing li:nth-child(n+5),.steps li:nth-child(n+5){animation-delay:.16s}
+/* hojas y avisos */
+.sheet{animation:aparece .25s ease both}
+.sheet .in2{animation:hoja .5s var(--ez) both}
+@keyframes hoja{from{transform:translateY(100%)}to{transform:none}}
+.toast{transform:translate(-50%,14px) scale(.96);transition:opacity .25s,transform .5s var(--sp)}
+.toast.show{transform:translate(-50%,0) scale(1)}
+.search{transition:max-height .45s var(--ez),opacity .3s,margin .45s var(--ez)}
+/* modo cocina: el paso entra desde el lado hacia donde avanzas */
+.cm{animation:aparece .35s ease both}
+.cm .num,.cm .ttl,.cm .paso,.cm .tim{animation:pasoIn .55s var(--ez) both}
+.cm .ttl{animation-delay:.03s}.cm .paso{animation-delay:.06s}.cm .tim{animation-delay:.12s}
+.cm[data-dir="sig"] .num,.cm[data-dir="sig"] .ttl,.cm[data-dir="sig"] .paso,.cm[data-dir="sig"] .tim{--x:36px}
+.cm[data-dir="ant"] .num,.cm[data-dir="ant"] .ttl,.cm[data-dir="ant"] .paso,.cm[data-dir="ant"] .tim{--x:-36px}
+@keyframes pasoIn{from{opacity:0;transform:translate(var(--x,0),var(--y,10px))}to{opacity:1;transform:none}}
+.cm[data-dir] .num{--y:0}
+.cm .vbar i{transition:top .5s var(--sp)}
+.cm .pie .sig{transition:transform .4s var(--sp)}.cm .pie .sig:active{transform:translateX(6px)}
+.cm .pie .ant:active{transform:translateX(-6px)}
+.cm .tim{transition:transform .4s var(--sp)}.cm .tim:active{transform:scale(.95)}
+.tmr{animation:sube .45s var(--sp) both}
+.tmr:not(.pau):not(.fin) .tt{animation:late 2s ease-in-out infinite}
+@keyframes late{50%{opacity:.7}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0ms!important;transition-duration:.01ms!important}img.fd{opacity:1}}
 </style>
 </head>
 <body>
@@ -488,7 +559,9 @@ const urlCache = new Map();
 async function fotoURL(id){ if (urlCache.has(id)) return urlCache.get(id);
   let b = await fotoGet(id).catch(() => null); if (!b) b = await ghBajarFoto(id); if (!b) return null;
   const u = URL.createObjectURL(b); urlCache.set(id, u); return u; }
-function imgEl(id){ const im = el("img",{alt:"", loading:"lazy"}); fotoURL(id).then(u => { if (u) im.src = u; }); return im; }
+function imgEl(id){ const im = el("img",{alt:"", loading:"lazy", class:"fd"});
+  im.addEventListener("load", () => im.classList.add("ok"), {once:true});
+  fotoURL(id).then(u => { if (u){ im.src = u; if (im.complete && im.naturalWidth) im.classList.add("ok"); } }); return im; }
 async function comprimir(file){
   const bmp = await createImageBitmap(file).catch(() => null); if (!bmp) return file;
   const k = Math.min(1, 1400 / Math.max(bmp.width, bmp.height));
@@ -504,6 +577,8 @@ function ruta(){ const h = location.hash.slice(1);
 function ir(h){ if (location.hash.slice(1) !== h) location.hash = h; else render(); }
 function volver(){ if (history.length > 1 && location.hash) history.back(); else location.hash = ""; }
 window.addEventListener("hashchange", render);
+window.addEventListener("scroll", () => { const f = document.querySelector(".foto img"); if (!f) return;
+  const y = Math.max(0, window.scrollY); f.style.transform = "translateY(" + (y * .35) + "px) scale(" + (1 + y / 1400) + ")"; }, {passive:true});
 let busca = "";
 
 function render(){
@@ -554,6 +629,11 @@ function tarjeta(x){
       el("span",{class:"tm"}, IC.clock(), tm || "—")), el("span",{class:"ar"}, IC.diag())),
     el("div",{class:"tlf"}, x.foto ? imgEl(x.foto) : el("span",{class:"sf"}, IC.bowl())));
 }
+// chispas al marcar favorita
+function chispas(b){ const r = b.getBoundingClientRect(), cx = r.left + r.width/2, cy = r.top + r.height/2;
+  for (let i = 0; i < 10; i++){ const a = i / 10 * Math.PI * 2, d = 26 + (i % 2) * 10, sp = document.createElement("span"); sp.className = "chispa";
+    sp.style.cssText = "left:" + (cx - 3) + "px;top:" + (cy - 3) + "px;--dx:" + (Math.cos(a) * d) + "px;--dy:" + (Math.sin(a) * d) + "px";
+    document.body.append(sp); setTimeout(() => sp.remove(), 700); } }
 // vista de la lista: "cards" (mosaico) o "lista" (tarjetas horizontales)
 let vista = (() => { try { return localStorage.getItem("recetas:vista") || "cards"; } catch(e){ return "cards"; } })();
 function vLista(v){
@@ -590,7 +670,7 @@ function vLista(v){
   const g = el("div",{class:"tls" + (vista === "lista" ? " hz" : "")});
   const bV = (k, ic, lab) => el("button",{class:"vb" + (vista === k ? " on" : ""),"aria-label":lab,onclick:e => {
     vista = k; try { localStorage.setItem("recetas:vista", k); } catch(_){}
-    g.classList.toggle("hz", k === "lista"); e.currentTarget.parentNode.querySelectorAll(".vb").forEach(b => b.classList.toggle("on", b === e.currentTarget)); vib(6); }}, ic);
+    g.classList.toggle("hz", k === "lista"); pintar(); e.currentTarget.parentNode.querySelectorAll(".vb").forEach(b => b.classList.toggle("on", b === e.currentTarget)); vib(6); }}, ic);
   v.append(el("div",{class:"sech2"}, el("span",{class:"lbl2"}, "Tus recetas ", el("em",{text:String(recetas.length)})),
     el("div",{class:"vista"}, bV("cards", IC.grid(), "Ver en tarjetas"), bV("lista", IC.rows(), "Ver en lista"))), fila); marcar();
   v.append(g);
@@ -601,7 +681,7 @@ function vLista(v){
     const arr = recetas.filter(x => (filtro === "todas" || (filtro === "fav" ? x.fav : x.cats.includes(filtro))) && (!filtroTipo || x.tipos.includes(filtroTipo)) && (!q || (x.titulo + " " + x.ingredientes.join(" ")).toLowerCase().includes(q)))
       .sort((a,b) => (b.creada || 0) - (a.creada || 0));
     if (!arr.length){ g.append(el("div",{class:"empty"}, q ? "Sin resultados." : recetas.length ? "No hay recetas con ese filtro." : "Toca + para agregar tu primera receta.")); return; }
-    arr.forEach(x => g.append(tarjeta(x)));
+    arr.forEach((x, i) => { const t = tarjeta(x); t.style.setProperty("--i", Math.min(i, 10)); g.append(t); });
   }
   pintar();
   document.body.append(el("nav",{class:"barra"},
@@ -615,7 +695,8 @@ function vVer(v, x){
     el("button",{class:"ib cir fl l","aria-label":"Volver",onclick:() => ir("")}, IC.back()),
     el("div",{class:"fl r"},
       el("button",{class:"ib cir","aria-label":"Editar",onclick:() => ir("e-" + x.id)}, IC.edit()),
-      el("button",{class:"ib cir hv" + (x.fav ? " on" : ""),"aria-label":"Favorita",onclick:async () => { x.fav = !x.fav; x.editada = Date.now(); await dbPut(x); render(); }}, IC.heart()))));
+      el("button",{class:"ib cir hv" + (x.fav ? " on" : ""),"aria-label":"Favorita",onclick:async e => { const b = e.currentTarget; x.fav = !x.fav; x.editada = Date.now();
+        b.classList.toggle("on", x.fav); b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop"); if (x.fav){ chispas(b); vib(15); } else vib(8); await dbPut(x); }}, IC.heart()))));
   const c = el("div",{class:"ficha"});
   c.append(el("h1",{text:x.titulo || "Sin nombre"}));
   c.append(el("div",{class:"meta2"},
@@ -747,7 +828,9 @@ function pintarDocks(){
 }
 // fondos pastel de cada paso: [fondo, texto, acento]
 const PALETA = [["#e7e2d6","#2b2a25","#5f6b4e"],["#cdd5c2","#262a22","#4e5b3f"],["#dcd8cf","#2a2926","#7a5f45"],["#e6d2c2","#2e2621","#8a5a3c"],["#5f6b4e","#f1efe7","#e6dcc0"]];
+let dir = 0, posAnt = 0;
 function vCocinar(x){
+  dir = 0; posAnt = 0;
   mantenerPantalla();
   if (paso >= x.pasos.length) paso = 0;
   const cm = el("div",{class:"cm"}); document.body.append(cm);
@@ -770,9 +853,10 @@ function vCocinar(x){
     // pie: barra vertical de progreso a la izquierda, atrás/siguiente en texto
     const alto = 64, pos = x.pasos.length > 1 ? paso / (x.pasos.length - 1) * (alto - 12) : 0;
     cm.append(el("div",{class:"pie"},
-      el("div",{class:"vl"}, el("div",{class:"vbar"}, el("i",{style:"top:" + pos + "px"})),
-        paso > 0 ? el("button",{class:"ant",onclick:() => { paso--; vib(8); pintar(); }}, "atrás") : null),
-      el("button",{class:"sig",onclick:() => { if (ult){ toast("¡Buen provecho!"); vib([20,60,20]); ir("r-" + x.id); } else { paso++; vib(8); pintar(); } }}, ult ? "terminar" : "siguiente →")));
+      el("div",{class:"vl"}, el("div",{class:"vbar"}, (() => { const t = el("i",{style:"top:" + posAnt + "px"}); requestAnimationFrame(() => requestAnimationFrame(() => { t.style.top = pos + "px"; posAnt = pos; })); return t; })()),
+        paso > 0 ? el("button",{class:"ant",onclick:() => { dir = -1; paso--; vib(8); pintar(); }}, "atrás") : null),
+      el("button",{class:"sig",onclick:() => { if (ult){ toast("¡Buen provecho!"); vib([20,60,20]); ir("r-" + x.id); } else { dir = 1; paso++; vib(8); pintar(); } }}, ult ? "terminar" : "siguiente →")));
+    cm.dataset.dir = dir > 0 ? "sig" : dir < 0 ? "ant" : "";
     requestAnimationFrame(() => ajustar(pz));
   }
   // el texto del paso toma el tamaño más grande que quepa en el espacio libre
@@ -789,7 +873,7 @@ function vCocinar(x){
   let x0 = null;
   cm.addEventListener("touchstart", e => { x0 = e.touches[0].clientX; }, {passive:true});
   cm.addEventListener("touchend", e => { if (x0 == null) return; const dx = e.changedTouches[0].clientX - x0; x0 = null;
-    if (Math.abs(dx) > 70){ if (dx < 0 && paso < x.pasos.length - 1){ paso++; pintar(); } else if (dx > 0 && paso > 0){ paso--; pintar(); } } }, {passive:true});
+    if (Math.abs(dx) > 70){ if (dx < 0 && paso < x.pasos.length - 1){ dir = 1; paso++; vib(8); pintar(); } else if (dx > 0 && paso > 0){ dir = -1; paso--; vib(8); pintar(); } } }, {passive:true});
   pintar();
 }
 function verIng(x){

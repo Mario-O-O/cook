@@ -483,13 +483,12 @@ img.fd.ok{opacity:1}
 .cm .pie .sig{transition:transform .4s var(--sp)}.cm .pie .sig:active{transform:translateX(6px)}
 .cm .pie .ant:active{transform:translateX(-6px)}
 .cm .tim{transition:transform .4s var(--sp)}.cm .tim:active{transform:scale(.95)}
-.tmr{animation:sube .45s var(--sp) both}
 @keyframes late{50%{opacity:.7}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0ms!important;transition-duration:.01ms!important}img.fd{opacity:1}}
 
 .cm .paso .tit{font-weight:400}
 
-.dockf{top:calc(70px + env(safe-area-inset-top))}
+.dockf{top:auto;bottom:calc(88px + env(safe-area-inset-bottom));animation:barraIn .5s var(--sp) both}
 .dockf .tmr{box-shadow:0 10px 24px -12px rgba(0,0,0,.45)}
 </style>
 </head>
@@ -823,10 +822,18 @@ function dock(){
   return d;
 }
 function pintarDocks(){
-  document.querySelectorAll(".dock").forEach(d => d.replaceWith(dock()));
+  // si son los mismos temporizadores, solo actualiza números y estado (sin reconstruir: así no parpadea)
+  const firma = timers.map(t => t.id + (t.sonando ? "s" : t.pausa ? "p" : "r")).join(",");
+  document.querySelectorAll(".dock").forEach(d => {
+    if (d.dataset.firma === firma){
+      timers.forEach((t, i) => { const fila = d.children[i]; if (!fila) return;
+        fila.querySelector(".tt").textContent = t.sonando ? "¡Listo!" : mmss(t.resta);
+        fila.querySelector(".bar").style.width = (t.sonando ? 100 : (1 - t.resta / t.total) * 100) + "%"; });
+    } else { const nd = dock(); nd.dataset.firma = firma; d.replaceWith(nd); }
+  });
   const r = ruta(), fuera = !r.cocinar && timers.length;
   let f = document.querySelector(".dockf");
-  if (fuera && !f){ f = el("div",{class:"dockf"}, dock()); document.body.append(f); }
+  if (fuera && !f){ const nd = dock(); nd.dataset.firma = firma; f = el("div",{class:"dockf"}, nd); document.body.append(f); }
   if (!fuera && f){ f.remove(); f = null; }
   // flota encima del contenido (sobre la foto), sin empujar nada hacia abajo
 }
@@ -856,7 +863,7 @@ function vCocinar(x){
     cm.append(pz);
     if (seg){ const ya = timers.some(z => z.rec === x.id && z.paso === paso);
       cm.append(el("button",{class:"tim" + (ya ? " ya" : ""),onclick:() => { if (!ya){ crearTimer(x, paso, seg); pintar(); } }}, IC.clock(), ya ? "temporizador en marcha" : "iniciar temporizador · " + mmss(seg))); }
-    cm.append(dock());
+    { const nd = dock(); nd.dataset.firma = timers.map(t => t.id + (t.sonando ? "s" : t.pausa ? "p" : "r")).join(","); cm.append(nd); }
     // pie: barra vertical de progreso a la izquierda, atrás/siguiente en texto
     const alto = 64, pos = x.pasos.length > 1 ? paso / (x.pasos.length - 1) * (alto - 12) : 0;
     cm.append(el("div",{class:"pie"},

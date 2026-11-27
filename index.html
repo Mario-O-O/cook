@@ -490,6 +490,19 @@ img.fd.ok{opacity:1}
 
 .dockf{top:auto;bottom:calc(88px + env(safe-area-inset-bottom));animation:barraIn .5s var(--sp) both}
 .dockf .tmr{box-shadow:0 10px 24px -12px rgba(0,0,0,.45)}
+
+/* buscador, corazón del filtro, cucharas de medida */
+.sugbox.hide{display:none}
+.filtros button.fv svg{width:17px;height:17px;vertical-align:-3px}
+.filtros button.fv.on svg{fill:currentColor}
+.foto img{position:absolute;left:0;top:-18%;width:100%;height:118%;object-fit:cover;transform-origin:50% 100%;will-change:transform}
+.ing .pt.med{position:relative;background:#efe8da;color:#6b5434;overflow:visible}
+.ing .pt.med{width:64px;height:44px;border-radius:14px}
+.ing .pt.med .cuch{width:54px;height:18px}
+.ing .pt.med .x{position:absolute;right:-6px;bottom:-4px;font-family:"Lato",sans-serif;font-style:normal;font-size:10.5px;font-weight:400;background:#23241f;color:#fff;border-radius:99px;padding:1px 5px}
+.ing .itx{display:flex;flex-direction:column;gap:1px;min-width:0}
+.ing .medt{font-size:11.5px;color:#9a7a4c;letter-spacing:.02em}
+.sheet .ing .pt.med{background:#efe8da}
 </style>
 </head>
 <body>
@@ -580,8 +593,11 @@ function ruta(){ const h = location.hash.slice(1);
 function ir(h){ if (location.hash.slice(1) !== h) location.hash = h; else render(); }
 function volver(){ if (history.length > 1 && location.hash) history.back(); else location.hash = ""; }
 window.addEventListener("hashchange", render);
+// parallax de la foto: la imagen es más alta que su marco y solo se mueve dentro del sobrante, así nunca se ve el fondo
 window.addEventListener("scroll", () => { const f = document.querySelector(".foto img"); if (!f) return;
-  const y = Math.max(0, window.scrollY); f.style.transform = "translateY(" + (y * .35) + "px) scale(" + (1 + y / 1400) + ")"; }, {passive:true});
+  const h = f.parentNode.offsetHeight, y = window.scrollY;
+  if (y <= 0){ f.style.transform = "scale(" + (1 + Math.min(-y, 200) / h) + ")"; return; }   // si estiras hacia abajo, la foto crece y tapa
+  f.style.transform = "translateY(" + Math.min(y * .3, h * .18) + "px)"; }, {passive:true});
 let busca = "";
 
 function render(){
@@ -654,36 +670,42 @@ function vLista(v){
   pan.append(el("div",{class:"lbl2",text:SALUDO[com]}));
   pan.append(el("h1",{class:"big"}, "¿Qué cocinamos", el("br"), "para ", el("em",{text:{desayuno:"el desayuno", almuerzo:"el almuerzo", cena:"la cena"}[com]}), "?"));
   pan.append(s);
+  const sugBox = el("div",{class:"sugbox" + (q ? " hide" : "")}); pan.append(sugBox);
   if (sg){ const x = sg.x;
-    pan.append(el("button",{class:"sug2",onclick:() => ir("r-" + x.id)},
+    sugBox.append(el("button",{class:"sug2",onclick:() => ir("r-" + x.id)},
       el("div",{class:"sgt"}, el("div",{}, el("small",{text:"Sugerencia de hoy"}), el("b",{text:x.titulo || "Sin nombre"}), tiempoTxt(x) ? el("span",{class:"tm"}, IC.clock(), tiempoTxt(x)) : null),
         el("span",{class:"ar"}, IC.diag())),
       x.foto ? el("div",{class:"sgf"}, imgEl(x.foto)) : null));
-    if (sg.varias) pan.append(el("button",{class:"otra",onclick:() => { saltoSug++; vib(8); render(); }}, IC.again(), "otra idea"));
+    if (sg.varias) sugBox.append(el("button",{class:"otra",onclick:() => { saltoSug++; vib(8); render(); }}, IC.again(), "otra idea"));
   }
   v.append(pan);
   // filtros
-  const F = [["todas","Todas"]].concat(CATS).concat([["fav","♥"]]);
+  const F = [["todas","Todas"]].concat(CATS).concat([["fav", IC.heart()]]);
   if (!F.some(f => f[0] === filtro)) filtro = "todas";
   const fila = el("div",{class:"filtros"});
   const marcar = () => fila.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.k === filtro || b.dataset.t === filtroTipo));
-  F.forEach(([k,t]) => fila.append(el("button",{"data-k":k,onclick:() => { filtro = k; vib(6); marcar(); pintar(); }}, t)));
+  F.forEach(([k,t]) => fila.append(el("button",{"data-k":k,class:k === "fav" ? "fv" : null,"aria-label":k === "fav" ? "Favoritas" : null,onclick:() => { filtro = k; vib(6); marcar(); pintar(); }}, t)));
   fila.append(el("span",{class:"div"}));
   TIPOS.forEach(([k,t]) => fila.append(el("button",{"data-t":k,onclick:() => { filtroTipo = filtroTipo === k ? "" : k; vib(6); marcar(); pintar(); }}, t)));
   const g = el("div",{class:"tls" + (vista === "lista" ? " hz" : "")});
   const bV = (k, ic, lab) => el("button",{class:"vb" + (vista === k ? " on" : ""),"aria-label":lab,onclick:e => {
     vista = k; try { localStorage.setItem("recetas:vista", k); } catch(_){}
     g.classList.toggle("hz", k === "lista"); pintar(); e.currentTarget.parentNode.querySelectorAll(".vb").forEach(b => b.classList.toggle("on", b === e.currentTarget)); vib(6); }}, ic);
-  v.append(el("div",{class:"sech2"}, el("span",{class:"lbl2"}, "Tus recetas ", el("em",{text:String(recetas.length)})),
+  const titLista = el("span",{class:"lbl2"});
+  v.append(el("div",{class:"sech2"}, titLista,
     el("div",{class:"vista"}, bV("cards", IC.grid(), "Ver en tarjetas"), bV("lista", IC.rows(), "Ver en lista"))), fila); marcar();
   v.append(g);
-  s.querySelector("input").addEventListener("input", e => { busca = e.target.value; pintar(); });
+  const inp = s.querySelector("input");
+  inp.addEventListener("input", () => { busca = inp.value; sugBox.classList.toggle("hide", !!busca.trim()); pintar(); });
+  inp.addEventListener("keydown", e => { if (e.key === "Enter"){ inp.blur(); g.scrollIntoView({behavior:"smooth",block:"start"}); } });
   function pintar(){
     g.replaceChildren();
-    const q = busca.trim().toLowerCase();
-    const arr = recetas.filter(x => (filtro === "todas" || (filtro === "fav" ? x.fav : x.cats.includes(filtro))) && (!filtroTipo || x.tipos.includes(filtroTipo)) && (!q || (x.titulo + " " + x.ingredientes.join(" ")).toLowerCase().includes(q)))
+    const sinT = t => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const q = sinT(busca.trim());
+    const arr = recetas.filter(x => (filtro === "todas" || (filtro === "fav" ? x.fav : x.cats.includes(filtro))) && (!filtroTipo || x.tipos.includes(filtroTipo)) && (!q || sinT(x.titulo + " " + x.ingredientes.join(" ") + " " + x.pasos.join(" ")).includes(q)))
       .sort((a,b) => (b.creada || 0) - (a.creada || 0));
-    if (!arr.length){ g.append(el("div",{class:"empty"}, q ? "Sin resultados." : recetas.length ? "No hay recetas con ese filtro." : "Toca + para agregar tu primera receta.")); return; }
+    titLista.replaceChildren(q ? "Resultados para “" + busca.trim() + "” " : "Tus recetas ", el("em",{text:String(q ? arr.length : recetas.length)}));
+    if (!arr.length){ g.append(el("div",{class:"empty"}, q ? "Ninguna receta tiene “" + busca.trim() + "” en el nombre ni en los ingredientes." : recetas.length ? "No hay recetas con ese filtro." : "Toca + para agregar tu primera receta.")); return; }
     arr.forEach((x, i) => { const t = tarjeta(x); t.style.setProperty("--i", Math.min(i, 10)); g.append(t); });
   }
   pintar();
@@ -714,7 +736,55 @@ function vVer(v, x){
   v.append(el("div",{style:"height:80px"}));
   if (x.pasos.length) document.body.append(el("button",{class:"cook",onclick:() => { paso = 0; ir("c-" + x.id); }}, "Empezar a cocinar", el("span",{class:"go"}, IC.diag())));
 }
-function listaIng(x){ return el("ul",{class:"ing"}, x.ingredientes.map((t, i) => el("li",{}, el("span",{class:"pt",text:String(i + 1)}), el("span",{text:t})))); }
+// lee medidas pequeñas: "una pizca", "1/2 cucharadita", "2 cucharadas", "al gusto"
+const FRAC = {"½":.5,"¼":.25,"¾":.75,"⅓":1/3,"⅔":2/3,"media":.5,"medio":.5,"un":1,"una":1,"dos":2,"tres":3,"cuarto":.25};
+function medida(t){
+  const s2 = t.toLowerCase();
+  // referencias para medir con cuchara: pizca ≈ ⅛ cdta, chorrito ≈ 1 cda, "al gusto" empieza con ¼ cdta
+  if (/\bchorrit/.test(s2)) return {tipo:"cda", n:1, txt:"chorrito ≈ 1 cda"};
+  if (/\bpizc|\bpellizc/.test(s2)) return {tipo:"cdta", n:0.125, txt:"pizca ≈ ⅛ cdta"};
+  const m = s2.match(/(\d+\s*\/\s*\d+|\d+(?:[.,]\d+)?(?:\s+\d+\s*\/\s*\d+)?|[½¼¾⅓⅔]|media|medio|una|un|dos|tres|un cuarto de)?\s*(?:de\s+)?(cucharaditas?|cditas?|cdtas?|cucharadas?|cdas?|cucharas?)\b/);
+  if (m){
+    let n = 1, q = (m[1] || "").trim().replace(",", ".");
+    if (q){ if (/^\d+\s+\d+\s*\/\s*\d+$/.test(q)){ const [e, f] = q.split(/\s+(?=\d+\s*\/)/); const [a, b] = f.split("/"); n = +e + a / b; }
+      else if (q.includes("/")){ const [a, b] = q.split("/"); n = a / b; } else if (FRAC[q] != null) n = FRAC[q]; else if (q === "un cuarto de") n = .25; else n = parseFloat(q) || 1; }
+    const grande = /^(cucharadas?|cdas?|cucharas?)$/.test(m[2]);
+    return {tipo: grande ? "cda" : "cdta", n};
+  }
+  if (/al gusto/.test(s2) && /\b(sal|pimienta|az[uú]car|comino|or[eé]gano|canela|paprika|piment[oó]n|ajo en polvo|nuez moscada|especias?)\b/.test(s2)) return {tipo:"cdta", n:0.25, txt:"al gusto · empieza con ¼ cdta"};
+  return null;
+}
+// cuchara vista de lado: la parte llena muestra hasta dónde llenarla (la línea punteada marca el nivel)
+function cuchara(md){
+  const grande = md.tipo === "cda", full = Math.floor(md.n + 1e-6), resto = md.n - full;
+  const fr = resto > 0.01 ? resto : 1;
+  const rx = grande ? 12.5 : 10, ry = grande ? 11.5 : 9.5, cx = 1.5 + rx, top = 2.5, bot = top + ry;
+  // profundidad de llenado para que el VOLUMEN (área del corte) sea la fracción pedida
+  const area = h => (Math.acos(1 - h) - (1 - h) * Math.sqrt(Math.max(0, 2 * h - h * h))) / (Math.PI / 2);
+  let lo = 0, hi = 1; for (let k = 0; k < 30; k++){ const mid = (lo + hi) / 2; if (area(mid) < fr) lo = mid; else hi = mid; }
+  const yF = fr >= 1 ? top : bot - lo * ry;
+  const id = "c" + Math.random().toString(36).slice(2, 7);
+  const cuenco = "M" + (cx - rx) + " " + top + " A " + rx + " " + ry + " 0 0 0 " + (cx + rx) + " " + top + " Z";
+  const sv = document.createElementNS(SVGNS,"svg"); sv.setAttribute("viewBox","0 0 46 15"); sv.setAttribute("class","cuch"); sv.setAttribute("aria-hidden","true");
+  sv.innerHTML = '<defs><clipPath id="' + id + '"><path d="' + cuenco + '"/></clipPath></defs>' +
+    '<rect x="0" y="' + yF + '" width="46" height="' + (bot - yF + 1) + '" fill="#c9a46b" clip-path="url(#' + id + ')"/>' +
+    '<path d="' + cuenco + '" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>' +
+    '<path d="M' + (cx + rx) + ' ' + top + ' C ' + (cx + rx + 8) + ' ' + top + ', ' + (cx + rx + 12) + ' 1.2, 44.5 0.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
+    (fr < 1 ? '<line x1="' + (cx - rx - 1.5) + '" y1="' + yF + '" x2="' + (cx + rx + 1.5) + '" y2="' + yF + '" stroke="#6b5434" stroke-width=".8" stroke-dasharray="1.6 1.1"/>' : "");
+  return sv;
+}
+function etiquetaMed(md){
+  if (md.txt) return md.txt;
+  const f = {0.125:"⅛",0.25:"¼",0.5:"½",0.75:"¾"}, ent = Math.floor(md.n + 1e-6), r = Math.round((md.n - ent) * 8) / 8;
+  return (ent ? ent : "") + (f[r] || (r ? "+" : "")) + " " + (md.tipo === "cda" ? "cda" : "cdta");
+}
+function listaIng(x){ return el("ul",{class:"ing"}, x.ingredientes.map((t, i) => {
+  const md = medida(t);
+  if (!md) return el("li",{}, el("span",{class:"pt",text:String(i + 1)}), el("span",{text:t}));
+  const veces = Math.ceil(md.n - 1e-6);
+  return el("li",{class:"conmed"}, el("span",{class:"pt med",title:etiquetaMed(md)}, cuchara(md), veces > 1 ? el("b",{class:"x",text:"×" + veces}) : null),
+    el("span",{class:"itx"}, el("span",{text:t}), el("small",{class:"medt",text:etiquetaMed(md)})));
+})); }
 function textoReceta(x){
   return (x.titulo || "Receta") + "\n" + [x.tiempo, x.porciones ? x.porciones + " porciones" : ""].filter(Boolean).join(" · ") +
     "\n\nINGREDIENTES\n" + x.ingredientes.map(t => "• " + t).join("\n") + "\n\nPREPARACIÓN\n" + x.pasos.map((p, i) => (i+1) + ". " + p).join("\n") + (x.notas ? "\n\nNOTAS\n" + x.notas : "");

@@ -618,7 +618,7 @@ function render(){
 
 // ---------- lista ----------
 const CATS = [["desayuno","Desayuno"],["almuerzo","Almuerzo"],["cena","Cena"],["snack","Snack"],["postre","Postre"]];
-const TIPOS = [["sopa","Sopa / caldo"],["fuerte","Plato fuerte"],["ensalada","Ensalada"],["acomp","Acompañamiento"],["pasta","Pasta"],["bebida","Bebida"]];
+const TIPOS = [["sopa","Sopa / caldo"],["fuerte","Plato fuerte"],["ensalada","Ensalada"],["acomp","Acompañamiento"],["pasta","Pasta"],["bebida","Bebida"],["salsa","Salsa"]];
 const CAT_N = Object.fromEntries(CATS.concat(TIPOS));
 let filtro = "todas", filtroTipo = "", saltoSug = 0;
 function comidaAhora(){ const h = new Date().getHours(); return h < 11 ? "desayuno" : h < 16 ? "almuerzo" : "cena"; }
